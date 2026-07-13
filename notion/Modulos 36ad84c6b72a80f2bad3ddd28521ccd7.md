@@ -1,0 +1,22 @@
+# Modulos:
+
+- [x]  Módulo 1 — Concluído
+- [x]  Módulo 2 — Concluído
+- [x]  Módulo 3 — Concluído
+- [x]  Módulo 4 — Concluído
+- [x]  Módulo 5 — Concluído
+- [x]  Módulo 6 — Concluído
+- [x]  Módulo 7 — Prazo: 27/05
+- [x]  Módulo 8 — Prazo: 31/05
+- [x]  Módulo 9 — Prazo: 04/06
+- [x]  Módulo 10 — Prazo: 08/06
+- [x]  Módulo 11 — Prazo: 12/06
+- [x]  Módulo 12 — Prazo: 16/06
+- [x]  Módulo 13 — Prazo: 20/06
+- [x]  Módulo 14 — Prazo: 24/06
+- [ ]  Módulo 15 — Prazo: 28/06
+- [ ]  Módulo 16 — Prazo: 02/07
+- [ ]  Módulo 17 — Prazo: 06/07
+- [ ]  Revisão Geral — 07/07 até 12/07
+- [ ]  COMPETIÇÃO — 13/07 🏆
+- [ ]

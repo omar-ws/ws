@@ -220,3 +220,12 @@ fields @timestamp, @message
 - ARN de modelo: `arn:aws:bedrock:<região>::foundation-model/<model-id>` (conta VAZIA = `::` duplo) — modelo vai no RESOURCE, Action = verbo limpo (endpoint policy pronta na colinha 1)
 - Model ID: catálogo de modelos no console | CLI: `aws bedrock list-foundation-models`
 - Pesquisa: `bedrock agent prepare alias` / `bedrock knowledge base sync data source`
+
+
+## TRIGGERS E ENV VARS | S3 event notification | EventBridge rule vs Scheduler | environ | presign
+- **S3 → Lambda:** bucket → Propriedades → **Event notifications** → Criar → evento `s3:ObjectCreated:*` (+ prefixo se pedir) → destino Lambda. Console cria a permissão sozinho. (Não é EventBridge nem CloudTrail — é nativo do S3)
+- **EventBridge, 2 menus:** **Regras/Rules (clássico)** = invoca Lambda por POLÍTICA DE RECURSO, SEM role → usar este em lab que bloqueia CreateRole | **Cronogramas/Scheduler** = assume ROLE (pode dar erro iam:CreateRole)
+- **Rule em bus CUSTOM:** selecionar o BUS antes de criar a rule (rule no default não vê eventos do custom). Pattern custom = JSON `{"detail": {"Campo": ["Valor"]}}`
+- Pattern de CloudTrail: `source: aws.codecommit` + `detail.eventName: CreateRepository` (mapear do evento de exemplo)
+- **ENV VARS:** a CHAVE vem do CÓDIGO (Ctrl+F `environ` / `process.env`), o VALOR vem das Output Properties/inventário. "Env var pertence a quem LÊ." KeyError: 'X' = env var X faltando
+- **Presigned URL** (compartilhar arquivo privado): `aws s3 presign s3://bucket/arquivo --expires-in 300`

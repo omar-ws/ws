@@ -114,3 +114,13 @@ Receita EC2 privada acessivel via SSM (Fleet Manager / Session Manager), sem int
 - SELECT basico: `SELECT * FROM tabela WHERE coluna = 'valor';` | contar: `SELECT COUNT(*) FROM tabela WHERE ...;`
 - Portas pra SG: MySQL/Aurora **3306** | SQL Server **1433** | PostgreSQL **5432** | RDP **3389** | SSH **22** | endpoints/APIs AWS **443**
 - Regra universal de SG: quem INICIA so precisa de saida (padrao ja libera); quem RECEBE ganha a regra de ENTRADA com origem = SG de quem chama. **1 regra por elo, sempre de entrada, sempre no lado que recebe**
+
+
+## WAF E CORS | bloquear caminho URI | erro de CORS no navegador
+- **WAF (bloquear /pagina sem afetar o resto):** WAF & Shield → Criar Web ACL → associar recurso (ALB ou CloudFront) → Add rule → **Rule builder** → Inspect: **URI path** | Match: Contains | valor: `/info.php` → Action: **Block**. WAF = L7 (vê URL/payload; SG não vê URL)
+- **CORS:** erro que só aparece no NAVEGADOR (console F12: "blocked by CORS policy") quando um site chama recurso de OUTRO domínio → bucket → Permissões → CORS:
+```json
+[{ "AllowedHeaders": ["*"], "AllowedMethods": ["GET"], "AllowedOrigins": ["https://dominio-que-chama.com"], "ExposeHeaders": [] }]
+```
+- ⚠️ AllowedOrigins = SÓ o domínio, SEM path e SEM barra no final (`/index.html` no origin = erro clássico)
+- Objeto 403 público simples pode ser só ACL do objeto (tornar público), não bucket policy — ler o que a task pede

@@ -94,3 +94,23 @@ Restart-Service AmazonSSMAgent       # se não validar
 ## VPC FLOW LOGS | quando usar
 - Metadados de tráfego (IP, porta, ACCEPT/REJECT) — nível VPC/subnet/ENI — destino CloudWatch (via role) ou S3 (via bucket policy)
 - Usar quando NÃO acha o erro em SG/NACL/rota — mostra onde o pacote morre
+
+
+## SSM SEM INTERNET | Fleet Manager vazio | Session Manager | 3 endpoints | instancia nao aparece
+Receita EC2 privada acessivel via SSM (Fleet Manager / Session Manager), sem internet:
+1. **Role na EC2**: `AmazonSSMManagedInstanceCore` (instance profile)
+2. **3 Interface Endpoints**: `ssm` + `ssmmessages` + `ec2messages` (com **DNS privado LIGADO**)
+3. **1 SG so pros 3 endpoints**: ENTRADA 443, origem = SG da EC2 (crachá) — NAO precisa 1 SG por endpoint
+4. **Paciencia**: instancia que ganhou role/endpoint DEPOIS de criada demora minutos pra aparecer; se demorar, reiniciar o agente (`Restart-Service AmazonSSMAgent` / `sudo systemctl restart amazon-ssm-agent`)
+- QUEM INICIA e a EC2 (o agente DENTRO dela liga pra fora perguntando "tem ordem?") — o servico NUNCA disca pra instancia; seu comando pega carona na RESPOSTA da conexao que o agente ja abriu
+- **NAO EXISTE regra de volta em SG** (stateful: aonde vai, volta) — saida do endpoint / entrada na EC2 = nao escrever. Regra de volta e coisa de NACL (stateless), nao de SG
+- ⚠️ **PEGADINHA: endpoint criado SEM escolher SG pega o SG DEFAULT da VPC** — e o default so aceita entrada de quem TAMBEM veste o default. EC2 com outro SG = bloqueada = Fleet Manager vazio com tudo "parecendo certo"
+- Se nao puder CRIAR SG: (a) EDITAR regras de um SG existente (quase sempre permitido), ou (b) por o MESMO SG da EC2 no endpoint + regra de entrada 443 com origem = ele mesmo (auto-referencia)
+- Pesquisa: `ec2 private subnet ssm vpc endpoints fleet manager`
+
+## SQL SERVER NA EC2 | RDP + SSMS | select no banco | portas de banco
+- Banco **SQL Server** em EC2 Windows: caminho esperado = **RDP na maquina + ferramenta GRAFICA (SSMS / SQL Server Management Studio)** — nao e mysql no terminal! (terminal seria `sqlcmd`, mas o grafico e o caminho)
+- `mysql -u admin -p --host <endpoint>` = so MySQL/MariaDB. Cada banco tem seu cliente
+- SELECT basico: `SELECT * FROM tabela WHERE coluna = 'valor';` | contar: `SELECT COUNT(*) FROM tabela WHERE ...;`
+- Portas pra SG: MySQL/Aurora **3306** | SQL Server **1433** | PostgreSQL **5432** | RDP **3389** | SSH **22** | endpoints/APIs AWS **443**
+- Regra universal de SG: quem INICIA so precisa de saida (padrao ja libera); quem RECEBE ganha a regra de ENTRADA com origem = SG de quem chama. **1 regra por elo, sempre de entrada, sempre no lado que recebe**

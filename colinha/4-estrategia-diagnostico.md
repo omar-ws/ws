@@ -3,22 +3,23 @@
 
 ---
 
-## REGRA DO TEMPO | timer | loop | quando pegar dica | quando pular
+## REGRA DO TEMPO | timer | loop | quando pular
+- ⚠️ **NA PROVA REAL NÃO EXISTE DICA — usar dica = perde a prova.** O degrau "dica" sai do fluxo: travou de verdade = PULA.
 - **Timer de 15 min por task** (DuckDuckGo: pesquisar `timer 15 minutes`). Tocou → pergunta única: *"produzi informação NOVA?"*
   - SIM → renova 15 min e segue
-  - NÃO (loop) → DICA (é barata: 2-20 pts vs 150 da task travada)
-  - Tocou 2x na MESMA task (30 min) → dica OBRIGATÓRIA ou pula, sem negociar
+  - NÃO (loop) → PULA pra próxima task/JAM, sem negociar
+  - Tocou 2x na MESMA task (30 min) → pula OBRIGATÓRIO
 - **LOOP vale mais que relógio: mesmo erro 2x = para NA HORA**
-- Fluxo do campeão mundial (validado em prova): tentar → pesquisar (doc/Google, 2 buscas reformuladas) → dica
-- Pular = mudar de JAM (tasks do mesmo JAM podem ser encadeadas; dica destrava pré-requisito)
-- Conta: 3h/período ÷ 3 JAMs = 1h por JAM ≈ 20-25 min por task. Fácil fecha em 5-10 → gera sobra pra voltar na travada
+- Fluxo: tentar → pesquisar (doc/Google, 2 buscas reformuladas) → ler anotação/log e pesquisar a MENSAGEM de erro → pular e voltar depois
+- Pular = mudar de JAM (tasks do mesmo JAM podem ser encadeadas — se a task travada bloqueia as seguintes, vai pro próximo JAM)
+- Conta: ~1h por JAM ≈ 20-25 min por task. Fácil fecha em 5-10 → gera sobra pra voltar na travada com cabeça fria
 
 ## ORDEM DO PERÍODO | estratégia dos campeões
 1. LER os 3 JAMs antes de começar qualquer um (5 min)
 2. Mais FÁCIL primeiro (2 médios antes do hard)
 3. Travou → próximo | Voltar depois com a sobra e a cabeça fria
 4. Negociar pontos: JAM quase 100% > dois pela metade
-5. NÃO olhar pontuação/tempo de adversário ("pode ter feito com dica")
+5. NÃO olhar pontuação/tempo de adversário (terminar todas ≠ mais pontos — tempo e erros contam; a pontuação decide)
 
 ## ANTES DE MEXER | 2 min de mapa | erro de processo
 - **2 min de mapa ANTES de agir**: qual serviço → qual fluxo → onde está o log ("leio o enunciado, acho que sei e ignoro o básico" = meu erro conhecido)
@@ -111,3 +112,11 @@ rule conferir when
 - Se der crise: beber água, respirar. "Os outros também estão nervosos." Não olhar o placar dos outros
 - Contra-fato oficial: quinta 0/8 nas piores condições → sábado 5 fechados 48h depois. Circunstância ≠ capacidade
 - "Descansar também é preparo: chegar lá e fazer o que já sabe"
+
+
+## QUAL SERVIÇO É | não sei que serviço usar | como descobrir | pesquisar
+1. **LISTA DE SERVIÇOS do próprio JAM** (topo do desafio) = o cardápio — a resposta usa um deles. Frase sem sentido na lista ("ERA O OBJETIVO", "eu sou") = IAM traduzido por máquina
+2. **OUTPUT PROPERTIES / inventário** = as peças dadas (role, SG, secret, bucket...) — o que está lá é o que você vai usar. "Fornecido/fornecida" = usa o existente | "crie" = novo
+3. **O enunciado dita a ferramenta pelos substantivos:** "sem internet" = VPC endpoint | "agendar/todo dia" = EventBridge/cron | "aprovação" = CodeCommit/pipeline | "select/consulta no banco" = cliente SQL daquele banco | "conformidade/compliance" = Config | "quem fez/auditoria" = CloudTrail | "acessar terminal sem SSH" = SSM Session Manager
+4. Ainda perdido → pesquisar O OBJETIVO em inglês + aws: `aws <o que quero fazer>` (ex: `aws query sql server on ec2 windows`) — o nome do serviço aparece no resultado
+5. **A VALIDAÇÃO da task diz ONDE mexer** ("quando a política estiver configurada" = mexe na POLÍTICA, não no código)

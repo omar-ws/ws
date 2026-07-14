@@ -197,3 +197,26 @@ fields @timestamp, @message
 ```
 - Forense CloudTrail: resposta em `userIdentity.principalId` (formato `AROAXXX:nome-da-funcao` — parte DEPOIS dos dois-pontos)
 - Trilha pode EXISTIR com logging DESLIGADO → Start logging primeiro
+
+
+## SQL BÁSICO | select where count insert update | comandos de banco | qual cliente
+- Ler tudo: `SELECT * FROM tabela;` | só colunas: `SELECT nome, preco FROM tabela;`
+- Filtrar: `SELECT * FROM tabela WHERE coluna = 'valor' AND outra > 10;`
+- Contar: `SELECT COUNT(*) FROM tabela WHERE ...;` | ordenar: `ORDER BY coluna DESC` | limitar: `LIMIT 10`
+- Inserir: `INSERT INTO tabela (col1, col2) VALUES ('a', 1);`
+- Atualizar: `UPDATE tabela SET col = 'novo' WHERE id = 1;` ⚠️ SEM WHERE = altera a tabela INTEIRA
+- Apagar: `DELETE FROM tabela WHERE id = 1;`
+- Explorar: `SHOW DATABASES;` → `USE banco;` → `SHOW TABLES;` (MySQL) | texto entre 'aspas simples', número sem aspas, `;` no final
+- **QUAL CLIENTE PRA QUAL BANCO:** MySQL/MariaDB/Aurora-MySQL = `mysql` no terminal | **SQL Server = RDP + SSMS (gráfico)** (terminal seria sqlcmd) | PostgreSQL = `psql` | Redshift = Query Editor V2 no console
+- Pesquisa: `sql select where examples` / `<banco> connect ec2 windows`
+
+## BEDROCK | 3 endpoints | agente | knowledge base | alias | guardrails | preparar
+- **3 endpoints:** `bedrock` = CONFIGURAR | `bedrock-runtime` = invocar MODELO | `bedrock-agent-runtime` = invocar AGENTE. Truque: `boto3.client('X')` no código = nome do serviço do endpoint
+- Modelo = a IA em si | Agente = orquestra (consulta KB, chama Lambda via action group)
+- **FLUXO DO AGENTE (ordem sagrada):** mexeu em QUALQUER coisa → **Preparar (Prepare Agent)** → criar VERSÃO nova → apontar o **ALIAS** pra versão nova. Alias = ponteiro nomeado (igual alias de Lambda). Esquecer o Preparar/alias = mudança não vale
+- **KNOWLEDGE BASE:** adicionou/mudou data source → **SINCRONIZAR (Sync)** e ESPERAR concluir — sem sync o agente não acha nada
+- **ACTION GROUP:** Agent Builder → Grupos de ação → aqui troca a Lambda invocada; parâmetro exige nome válido + descrição não vazia
+- **GUARDRAILS:** se as Output Properties têm um pronto (ex: SecurityGuardrail) = ANEXAR o existente ao agente (+ Preparar + versão + alias)
+- ARN de modelo: `arn:aws:bedrock:<região>::foundation-model/<model-id>` (conta VAZIA = `::` duplo) — modelo vai no RESOURCE, Action = verbo limpo (endpoint policy pronta na colinha 1)
+- Model ID: catálogo de modelos no console | CLI: `aws bedrock list-foundation-models`
+- Pesquisa: `bedrock agent prepare alias` / `bedrock knowledge base sync data source`

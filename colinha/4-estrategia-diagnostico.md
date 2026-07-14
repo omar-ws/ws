@@ -19,7 +19,6 @@
 2. Mais FÁCIL primeiro (2 médios antes do hard)
 3. Travou → próximo | Voltar depois com a sobra e a cabeça fria
 4. Negociar pontos: JAM quase 100% > dois pela metade
-5. NÃO olhar pontuação/tempo de adversário (terminar todas ≠ mais pontos — tempo e erros contam; a pontuação decide)
 
 ## ANTES DE MEXER | 2 min de mapa | erro de processo
 - **2 min de mapa ANTES de agir**: qual serviço → qual fluxo → onde está o log ("leio o enunciado, acho que sei e ignoro o básico" = meu erro conhecido)

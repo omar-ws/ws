@@ -133,6 +133,44 @@ def lambda_handler(event, context):
 - boto3: `client = boto3.client("sns")` → nome = serviço do endpoint | `client.publish(TopicArn=..., Message=...)` — Message obrigatório, Subject opcional
 - Ordem dos ifs = prioridade (critical ANTES de warn)
 
+## LAMBDA GRAVA NO DYNAMO | put_item | codigo pronto | python js | escrever no dynamodb | so substituir
+**PYTHON (boto3)** — substituir só NOME_DA_ENV_VAR, nomes dos campos e valores:
+```python
+import os, json, boto3
+
+dynamodb = boto3.resource("dynamodb")
+table = dynamodb.Table(os.environ["TABLE_NAME"])   # valor vem da env var; chave = Ctrl+F environ no código
+
+def lambda_handler(event, context):
+    table.put_item(Item={
+        "Key": "valor-da-chave",          # nome EXATO da partition key (case-sensitive: Key ≠ key!)
+        "OutroCampo": event.get("campo", "padrao")
+    })
+    return {"statusCode": 200, "body": json.dumps("gravado")}
+```
+- LER: `resp = table.get_item(Key={"Key": "valor"})` → `resp.get("Item")`
+- QUERY: `from boto3.dynamodb.conditions import Key` no topo → `table.query(KeyConditionExpression=Key("Key").eq("valor"))["Items"]`
+- ⚠️ `boto3.resource(...).Table` aceita valor DIRETO (`"texto"`, `123`). Se o exemplo da doc tiver `{"S": "texto"}` é o CLIENT cru (`boto3.client`) — não misturar os dois estilos!
+
+**NODE.JS (SDK v3 — runtimes novos nodejs18+):**
+```javascript
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, PutCommand } = require("@aws-sdk/lib-dynamodb");
+const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+
+exports.handler = async (event) => {
+    await ddb.send(new PutCommand({
+        TableName: process.env.TABLE_NAME,
+        Item: { Key: "valor-da-chave", OutroCampo: 123 }
+    }));
+    return { statusCode: 200, body: JSON.stringify("gravado") };
+};
+```
+- Se o código do JAM já usar `require("aws-sdk")` (SDK v2, código antigo): `const db = new AWS.DynamoDB.DocumentClient();` → `await db.put({ TableName: ..., Item: {...} }).promise();` — seguir o estilo que JÁ está no arquivo
+- Permissão na role: `dynamodb:PutItem` (+ GetItem/Query se ler) com Resource = ARN da TABELA **sem /\*** 
+- Erro `Missing the key X` = o item não tem a partition key com o nome EXATO X | `KeyError: 'TABLE_NAME'` = env var faltando
+- Pesquisa: `boto3 dynamodb put_item example` / `aws sdk v3 dynamodb putcommand example`
+
 ## MAPA DE ERROS API | 500 502 403 | log group diagnóstico
 - **500** = API GW nem invocou a Lambda (permissão/integração) — log group da Lambda NEM EXISTE
 - **502** = Lambda invocada mas contrato quebrado (erro no código OU return errado) — log group EXISTE
@@ -229,3 +267,43 @@ fields @timestamp, @message
 - Pattern de CloudTrail: `source: aws.codecommit` + `detail.eventName: CreateRepository` (mapear do evento de exemplo)
 - **ENV VARS:** a CHAVE vem do CÓDIGO (Ctrl+F `environ` / `process.env`), o VALOR vem das Output Properties/inventário. "Env var pertence a quem LÊ." KeyError: 'X' = env var X faltando
 - **Presigned URL** (compartilhar arquivo privado): `aws s3 presign s3://bucket/arquivo --expires-in 300`
+
+
+## EVENTBRIDGE PATTERN PRONTO | event pattern json | source detail | rule invoca lambda | so substituir
+⚠️ REGRA DE OURO: **TODO valor no pattern vai dentro de LISTA `[ ]`** — `"source": "aws.ec2"` sem colchete = pattern inválido (erro clássico)
+
+**Evento de serviço AWS** (ex: EC2 mudou de estado):
+```json
+{
+  "source": ["aws.ec2"],
+  "detail-type": ["EC2 Instance State-change Notification"],
+  "detail": { "state": ["terminated"] }
+}
+```
+**Chamada de API via CloudTrail** (ex: repo novo criado):
+```json
+{
+  "source": ["aws.codecommit"],
+  "detail-type": ["AWS API Call via CloudTrail"],
+  "detail": { "eventName": ["CreateRepository"] }
+}
+```
+**Evento custom em bus custom** (ex: filtrar por campo do detail):
+```json
+{ "detail": { "OrderType": ["Food"] } }
+```
+- `source` de serviço AWS = `aws.<serviço>` (aws.ec2, aws.s3, aws.codecommit) | evento custom = o source que o CÓDIGO manda no put_events (Ctrl+F `Source` no código)
+- Como montar: pegar o EVENTO DE EXEMPLO (do enunciado ou da aba "Sandbox/exemplos" do console) e copiar os campos que quer filtrar — pattern é um ESPELHO do evento, só que com listas
+- Rule em bus CUSTOM: selecionar o bus ANTES de criar a rule! | Target = Lambda: console (rule clássico) cria a permissão sozinho
+- Console: usar "Padrão personalizado (editor JSON)" e colar — mais rápido que o formulário
+- Pesquisa: `eventbridge event pattern examples` / `eventbridge <serviço> event example`
+
+## PARAMETER STORE | SSM parametro | armazem de parametros | get_parameter | SecureString
+- Console: **Systems Manager → Armazenamento de parâmetros / Parameter Store** (fica no menu do SSM!)
+- CLI ler: `aws ssm get-parameter --name "/meu/param" --with-decryption --query Parameter.Value --output text`
+- CLI criar/editar: `aws ssm put-parameter --name "/meu/param" --value "abc" --type String --overwrite` (segredo = `--type SecureString`)
+- Python: `boto3.client("ssm").get_parameter(Name="/meu/param", WithDecryption=True)["Parameter"]["Value"]`
+- Node v3: `const { SSMClient, GetParameterCommand } = require("@aws-sdk/client-ssm");` → `(await ssm.send(new GetParameterCommand({ Name: "/meu/param", WithDecryption: true }))).Parameter.Value`
+- Permissão: `ssm:GetParameter` com Resource `arn:aws:ssm:<região>:<conta>:parameter/nome` (SecureString exige TAMBÉM `kms:Decrypt`)
+- Parameter Store = configs/valores (grátis) vs Secrets Manager = segredos com ROTAÇÃO automática — enunciado pedindo rotação = Secrets Manager
+- Pesquisa: `ssm get-parameter example` / `boto3 ssm get_parameter`

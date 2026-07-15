@@ -96,6 +96,16 @@ Restart-Service AmazonSSMAgent       # se não validar
 - Usar quando NÃO acha o erro em SG/NACL/rota — mostra onde o pacote morre
 
 
+## ROUTE 53 RESOLVER | endpoint de entrada | endpoint de saida | inbound outbound | DNS hibrido | zona privada
+- **Resolver = o DNS interno da VPC** (o IP ".2" da VPC). Endpoints do Resolver só entram em cena com **DNS HÍBRIDO** (on-premises ↔ AWS):
+- **Endpoint de ENTRADA / Inbound endpoint**: a pergunta DNS **ENTRA** na AWS — on-premises/outra rede consulta nomes que a AWS resolve (ex: zona privada). Criar = escolher VPC + 2 subnets (2 AZs) + SG → ganha ENIs com IPs privados → o DNS de fora aponta pra ESSES IPs
+- **Endpoint de SAÍDA / Outbound endpoint**: a pergunta **SAI** da AWS — a VPC consulta nomes do DNS on-premises. Exige TAMBÉM uma **REGRA DE ENCAMINHAMENTO / forwarding rule** ("domínio corp.local → IP do DNS de lá") ASSOCIADA à VPC — endpoint de saída sem regra associada = não faz nada
+- Decorador: regra de encaminhamento SÓ existe no de SAÍDA | entrada = IPs pra apontarem PRA você
+- **SG do endpoint: porta 53 em TCP E UDP** (origem = a rede que pergunta) — DNS usa os dois protocolos!
+- Zona hospedada PRIVADA só responde se estiver **ASSOCIADA à VPC** (Route 53 → zona → VPCs associadas)
+- Menu: Route 53 → **Resolver → Endpoints** (seção separada das zonas!) | Regras de encaminhamento = menu próprio "Regras"
+- Pesquisa: `route 53 resolver inbound endpoint` / `route 53 resolver forwarding rule`
+
 ## SSM SEM INTERNET | Fleet Manager vazio | Session Manager | 3 endpoints | instancia nao aparece
 Receita EC2 privada acessivel via SSM (Fleet Manager / Session Manager), sem internet:
 1. **Role na EC2**: `AmazonSSMManagedInstanceCore` (instance profile)
